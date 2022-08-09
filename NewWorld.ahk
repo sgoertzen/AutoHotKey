@@ -1,43 +1,7 @@
+#SingleInstance Force
 #MaxThreadsPerHotkey 2
-F2::
-if KeepMiningRunning  ; This means an underlying thread is already running the loop below.
-{
-    KeepMiningRunning := false  ; Signal that thread's loop to stop.
-    return  ; End this thread so that the one underneath will resume and see the change made by the line above.
-}
-; Otherwise:
-KeepMiningRunning := true
 
-; Wiggle so I know the script started
-Send a
-Sleep, 250
-Send f
-Sleep 250
-Counter = 0
-
-Loop
-{
-    Send, {space}
-    Random, rand, 1000, 3000
-    Sleep, rand
-    
-    ; Every few loops, move so it doesn't time me out
-    If Counter >  10 
-    {
-        Send e 
-        Sleep,  800
-        Send d
-        Counter = 0
-    }
-    Counter++
-
-    if not KeepMiningRunning  ; The user signaled the loop to stop by pressing Win-Z again.
-        break  ; Break out of this loop.
-}
-KeepMiningRunning := false  ; Reset in preparation for the next press of this hotkey.
-return
-
-F1::
+^F4::
 if KeepWaterRunning {
     KeepWaterRunning := false
     ToolTip
@@ -55,3 +19,73 @@ Loop {
         break
     }
 }
+return
+
+
+^X::
+if KeepFishingRunning {
+    ToolTip Fishing - Casting, A_ScreenWidth / 2, A_ScreenHeight * 8 / 10
+    Click down
+    sleep 2010
+    Click up
+    ToolTip Fishing - Waiting on bite, A_ScreenWidth / 2, A_ScreenHeight * 8 / 10
+}
+return
+
+^F3::
+if KeepFishingRunning {
+    KeepFishingRunning := false
+    ToolTip
+    return
+}
+KeepFishingRunning := true
+
+ToolTip Fishing - Press Control-X to cast, A_ScreenWidth / 2, A_ScreenHeight * 8 / 10
+lastPull := A_TickCount
+Loop 
+{
+    ; Search for yellow in the circle
+	PixelSearch, x, y, A_ScreenWidth*2/5, 100, A_ScreenWidth*3/5, A_ScreenHeight-100, 0x28B4F4, 1, Fast
+	if (errorLevel = 0)
+	{
+		idleTime := A_TickCount
+		ToolTip Fishing - Fish hooked, A_ScreenWidth / 2, A_ScreenHeight * 8 / 10
+		Click
+	}
+    ; Search for green on the fishing meter
+	PixelSearch, x, y, A_ScreenWidth/4, 100, A_ScreenWidth*3/4, A_ScreenHeight-100, 0x9DDD00, 5, Fast ;found green 
+	if (errorLevel = 0)
+	{
+		ToolTip Fishing - Pulling, A_ScreenWidth / 2, A_ScreenHeight * 8 / 10
+		lastPull := A_TickCount
+		if !GetKeyState("LButton")
+			Click down
+	} else {
+        ; Search for orange on the fishing meter
+			PixelSearch, x, y, A_ScreenWidth/4, 100, A_ScreenWidth*3/4, A_ScreenHeight-100, 0x2D8DFF, 5, Fast ;found orange
+			if (errorLevel = 0)
+			{
+				ToolTip Fishing - Pulling, A_ScreenWidth / 2, A_ScreenHeight * 8 / 10
+				lastPull := A_TickCount
+				if !GetKeyState("LButton")
+					Click down
+			} else {
+				if GetKeyState("LButton")
+				{
+					elapsedTime := A_TickCount - lastPull
+					if (elapsedTime < 1500)
+					{
+						ToolTip Fishing - Releasing, A_ScreenWidth / 2, A_ScreenHeight * 8 / 10
+						Click up
+						sleep 1500
+					}
+				}
+			}
+			
+	}
+    
+    if not KeepFishingRunning {
+        break
+    }
+}
+return
