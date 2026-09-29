@@ -1,49 +1,57 @@
-﻿#NoEnv  ; Recommended for performance and compatibility with future AutoHotkey releases.
-; #Warn  ; Enable warnings to assist with detecting common errors.
-SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
-SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
+﻿#Requires AutoHotkey v2.0
+#SingleInstance Force
 
-#MaxThreadsPerHotkey 3
+jumping := false
+SetKeyDelay(0, 25)
 
-F4::
-Hitting := !Hitting
-Loop
-{
-	If (!Hitting)
-		Break
-	Click
-	Sleep 500 ; Make this number higher for slower clicks, lower for faster.
+F3:: {
+    global jumping
+    jumping := !jumping
+    if jumping
+        SetTimer(JumpLoop, -1)
 }
-return
 
-F6::
-Jumping := !Jumping
-Loop
-{
-	If (!Jumping)
-		Break
-	Send, {w}
-	Sleep 700 ; Make this number higher for slower clicks, lower for faster.
+JumpLoop() {
+    global jumping
+    while jumping {
+        Loop 5 {
+            if !jumping
+                return
+            SendEvent("{Space}")
+            Sleep 150
+        }
+        ; Sleep 2 seconds in small slices so F3 cancels promptly
+        Loop 20 {
+            if !jumping
+                return
+            Sleep 100
+        }
+    }
 }
-return
 
-F7::
-Click Down Right
-return
+running := false
 
-F8::
-Click Up Right
-return
-
-F9::
-Firing := !Firing
-Loop
-{
-	If (!Firing)
-		Break
-	Click Down Left
-	Sleep 2000
-	Click Up Left
-	Sleep 1500
+F4:: {
+    global running
+    running := !running
+    
+    if running
+        SetTimer(RunLoop, -1)
 }
-return
+
+RunLoop() {
+    global running
+    while running {
+        Loop {
+            Send "{Shift down}{w down}"
+            Sleep 3000
+            Send "{w up}{Shift up}"
+
+            Loop 30 {
+               if !running
+                    return
+                Sleep 100
+            }
+        }
+    }
+}
