@@ -4,13 +4,15 @@
 jumping := false
 SetKeyDelay(0, 25)
 
-Notify(msg) {
+Notify(msg, ms := 1500) {
     CoordMode("ToolTip", "Screen")
     hwnd := ToolTip(msg, 0, 0)  ; draw once to measure its size
     WinGetPos(, , &w, &h, hwnd)
     ToolTip(msg, (A_ScreenWidth - w) // 2, (A_ScreenHeight - h) // 2)
-    SetTimer(() => ToolTip(), -1500)
+    SetTimer(() => ToolTip(), -ms)
 }
+
+*F1:: Notify("F3 to train jumping `nF4 to train running `nF5 to train attack `nF6 to train block", 5000)
 
 *F3:: {
     global jumping
