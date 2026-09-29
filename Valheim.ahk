@@ -12,7 +12,7 @@ Notify(msg, ms := 1500) {
     SetTimer(() => ToolTip(), -ms)
 }
 
-*F1:: Notify("F3 to train jumping `nF4 to train running `nF5 to train attack `nF6 to train block", 5000)
+*F1:: Notify("F3 to train jumping `nF4 to train running `nF5 to train attack `nF6 to train block `n`nPress again stop", 5000)
 
 *F3:: {
     global jumping
@@ -56,10 +56,10 @@ RunLoop() {
     while running {
         Loop {
             Send "{Shift down}{w down}"
-            Sleep 3000
+            Sleep 6000
             Send "{w up}{Shift up}"
 
-            Loop 30 {
+            Loop 25  {
                if !running
                     return
                 Sleep 100
