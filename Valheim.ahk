@@ -4,9 +4,18 @@
 jumping := false
 SetKeyDelay(0, 25)
 
-F3:: {
+Notify(msg) {
+    CoordMode("ToolTip", "Screen")
+    hwnd := ToolTip(msg, 0, 0)  ; draw once to measure its size
+    WinGetPos(, , &w, &h, hwnd)
+    ToolTip(msg, (A_ScreenWidth - w) // 2, (A_ScreenHeight - h) // 2)
+    SetTimer(() => ToolTip(), -1500)
+}
+
+*F3:: {
     global jumping
     jumping := !jumping
+    Notify(jumping ? "Jumping started" : "Jumping stopped")
     if jumping
         SetTimer(JumpLoop, -1)
 }
@@ -31,10 +40,11 @@ JumpLoop() {
 
 running := false
 
-F4:: {
+*F4:: {  ; wildcard so it still fires while Shift is held by RunLoop
     global running
     running := !running
-    
+    Notify(running ? "Running started" : "Running stopped")
+
     if running
         SetTimer(RunLoop, -1)
 }
@@ -54,4 +64,38 @@ RunLoop() {
             }
         }
     }
+}
+
+swinging := false
+
+*F5:: {  ; wildcard so it still fires while Shift is held by RunLoop
+    global swinging
+    swinging := !swinging
+    Notify(swinging ? "Swinging started" : "Swinging stopped")
+
+    if swinging
+        SetTimer(SwingLoop, -1)
+}
+
+SwingLoop() {
+    global swinging
+    while swinging {
+        Loop {
+            ; Games often miss instant down/up pairs, so hold the button briefly
+            SendEvent("{LButton down}")
+            Sleep 50
+            SendEvent("{LButton up}")
+            if !swinging
+                return
+            Sleep 200
+        }
+    }
+}
+
+*F6:: {
+    static held := false
+    if held := !held
+        Click("right down")
+    else
+        Click("right up")
 }
